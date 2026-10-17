@@ -4,8 +4,13 @@ package com.example.ebankbot.agents;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import reactor.core.publisher.Flux;
 
 @Service
 public class EbankAIAgent {
@@ -41,4 +46,20 @@ public class EbankAIAgent {
                 .call()
                 .content();
     }
+
+    public reactor.core.publisher.Flux<String> chatStream(String query, String conversationId) {
+        return chatClient.prompt()
+                .user(query)
+                .advisors(advisorSpec -> advisorSpec.param(
+                        ChatMemory.CONVERSATION_ID,
+                        conversationId
+                ))
+                .stream()
+                .content();
+    }
+
+    public Flux<String> chatStream(Prompt prompt){
+        return chatClient.prompt(prompt).stream().content();
+    }
+
 }
